@@ -19,7 +19,6 @@ use Hyperf\Coroutine\Coroutine;
 use Hyperf\Engine\Channel;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use resource;
 use Socket;
 use Thrift\Exception\TTransportException;
 use Thrift\Transport\TTransport;
