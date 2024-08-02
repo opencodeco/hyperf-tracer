@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 /**
- * This file is part of Hyperf + OpenCodeCo
+ * This file is part of Hyperf.
  *
- * @link     https://opencodeco.dev
+ * @link     https://www.hyperf.io
  * @document https://hyperf.wiki
- * @contact  leo@opencodeco.dev
- * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
+ * @contact  group@hyperf.io
+ * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace Hyperf\Tracer\Adapter;
 
 use Hyperf\Tracer\Contract\NamedFactoryInterface;
 use OpenTracing\NoopTracer;
 use OpenTracing\Tracer;
 
-class NoopTracerFactory implements NamedFactoryInterface
+class NoOpTracerFactory implements NamedFactoryInterface
 {
     public function make(string $name): Tracer
     {
