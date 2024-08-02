@@ -22,6 +22,9 @@ use Jaeger\Tracer;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Zipkin\Samplers\BinarySampler;
+
+use function Hyperf\Support\env;
 
 /**
  * @internal

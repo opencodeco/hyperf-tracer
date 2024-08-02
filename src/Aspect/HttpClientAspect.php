@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
+
 namespace Hyperf\Tracer\Aspect;
 
 use GuzzleHttp\Client;
@@ -26,6 +27,7 @@ use Hyperf\Tracer\Support\Uri as SupportUri;
 use Hyperf\Tracer\SwitchManager;
 use OpenTracing\Span;
 use OpenTracing\Tracer;
+use Hyperf\Tracer\TracerContext;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
@@ -36,18 +38,15 @@ class HttpClientAspect implements AroundInterface
     use SpanStarter;
     use ExceptionAppender;
 
-    public array $classes = [Client::class . '::requestAsync'];
+    public array $classes = [
+        Client::class . '::request',
+        Client::class . '::requestAsync',
+    ];
 
     public array $annotations = [];
 
-    private Tracer $tracer;
-
-    private SpanTagManager $spanTagManager;
-
-    public function __construct(Tracer $tracer, private SwitchManager $switchManager, SpanTagManager $spanTagManager)
+    public function __construct(private SwitchManager $switchManager, private SpanTagManager $spanTagManager)
     {
-        $this->tracer = $tracer;
-        $this->spanTagManager = $spanTagManager;
     }
 
     /**
@@ -63,6 +62,10 @@ class HttpClientAspect implements AroundInterface
         $options = $proceedingJoinPoint->arguments['keys']['options'];
         if (isset($options['no_aspect']) && $options['no_aspect'] === true) {
             return $proceedingJoinPoint->process();
+        }
+        // Disable the aspect for the requestAsync method.
+        if ($proceedingJoinPoint->methodName == 'request') {
+            $options['no_aspect'] = true;
         }
         /** @var Client $instance */
         $instance = $proceedingJoinPoint->getInstance();
@@ -96,7 +99,7 @@ class HttpClientAspect implements AroundInterface
         }
         $appendHeaders = [];
         // Injects the context into the wire
-        $this->tracer->inject(
+        TracerContext::getTracer()->inject(
             $span->getContext(),
             TEXT_MAP,
             $appendHeaders
