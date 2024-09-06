@@ -74,7 +74,7 @@ class TextCodecOtel implements CodecInterface
             return null;
         }
 
-        [$version, $traceId, $parentId, $flags] = $this->spanContextFromString($carrier[$this->traceIdHeader]);
+        [$version, $traceId, $spanId, $flags] = $this->spanContextFromString($carrier[$this->traceIdHeader]);
         if (!empty($carrier[$this->traceStateHeader])) {
             $traceStateHeaders = $carrier[$this->traceStateHeader];
             $state = explode(',', $traceStateHeaders);
@@ -98,28 +98,28 @@ class TextCodecOtel implements CodecInterface
             return null;
         }
 
-        return new SpanContext($traceId, $parentId, null, $flags, $baggage);
+        return new SpanContext($traceId, $spanId, null, $flags, $baggage);
     }
 
     /**
      * Store a span context to a string.
      *
      * @param string $traceId
-     * @param string $parentId
+     * @param string $spanId
      * @param string $flags
      * @return string
      */
-    private function spanContextToString($traceId, $parentId, $flags)
+    private function spanContextToString($traceId, $spanId, $flags)
     {
         if (strlen($traceId) < 32) {
             $start = mb_substr($traceId, 0, 3);
             $end = mb_substr($traceId, -3);
             $middle = mb_substr($traceId, 3, mb_strlen($traceId) - 6);
             $traceId = $start . $middle . $middle . $end;
-            $parentId = strtolower(dechex((int)$parentId));
+            $spanId = strtolower(dechex((int)$spanId));
         }
         $flags = str_pad($flags, 2, "0", STR_PAD_LEFT);
-        return sprintf('%s-%s-%s-%s', self::VERSION, $traceId, $parentId, $flags);
+        return sprintf('%s-%s-%s-%s', self::VERSION, $traceId, $spanId, $flags);
     }
 
     /**
