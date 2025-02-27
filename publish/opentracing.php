@@ -81,15 +81,15 @@ return [
             'stack_trace' => 'exception.stack_trace',
         ],
         'request' => [
-            'path' => 'request.path',
-            'method' => 'request.method',
+            'path' => 'http.route',
+            'method' => 'http.request.method',
             'header' => 'request.header',
         ],
         'coroutine' => [
             'id' => 'coroutine.id',
         ],
         'response' => [
-            'status_code' => 'response.status_code',
+            'status_code' => 'http.response.status_code',
         ],
     ],
 ];
