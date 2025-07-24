@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
 use Hyperf\Tracer\Adapter\JaegerTracerFactory;
-use Hyperf\Tracer\Adapter\NoOpTracerFactory;
+use Hyperf\Tracer\Adapter\NoopTracerFactory;
 use Hyperf\Tracer\Adapter\Reporter\Kafka;
 use Hyperf\Tracer\Adapter\ZipkinTracerFactory;
 use Zipkin\Reporters\Http;
@@ -96,7 +96,7 @@ return [
             ],
         ],
         'noop' => [
-            'driver' => NoOpTracerFactory::class,
+            'driver' => NoopTracerFactory::class,
         ],
     ],
     'tags' => [

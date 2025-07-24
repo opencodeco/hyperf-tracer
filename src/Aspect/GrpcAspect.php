@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 /**
- * This file is part of Hyperf.
+ * This file is part of Hyperf + OpenCodeCo
  *
- * @link     https://www.hyperf.io
+ * @link     https://opencodeco.dev
  * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ * @contact  leo@opencodeco.dev
+ * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
 
 namespace Hyperf\Tracer\Aspect;
@@ -53,7 +53,7 @@ class GrpcAspect extends AbstractAspect
 
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
     {
-        if (! $this->switchManager->isEnable('grpc')) {
+        if (! $this->switchManager->isEnabled('grpc')) {
             return $proceedingJoinPoint->process();
         }
 
@@ -93,7 +93,7 @@ class GrpcAspect extends AbstractAspect
         try {
             return $proceedingJoinPoint->process();
         } catch (Throwable $e) {
-            if ($this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($e)) {
+            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
                 $span->setTag('error', true);
                 $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
             }
@@ -117,7 +117,7 @@ class GrpcAspect extends AbstractAspect
                 }
             }
         } catch (Throwable $e) {
-            if ($this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($e::class)) {
+            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e::class)) {
                 $span?->setTag('error', true);
                 $span?->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
             }

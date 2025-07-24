@@ -49,7 +49,7 @@ class ElasticserachAspect extends AbstractAspect
      */
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
     {
-        if ($this->switchManager->isEnable('elasticserach') === false) {
+        if ($this->switchManager->isEnabled('elasticserach') === false) {
             return $proceedingJoinPoint->process();
         }
 
@@ -58,7 +58,7 @@ class ElasticserachAspect extends AbstractAspect
         try {
             $result = $proceedingJoinPoint->process();
         } catch (Throwable $e) {
-            if ($this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($e)) {
+            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
                 $span->setTag('error', true);
                 $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
             }

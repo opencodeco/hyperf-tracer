@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 /**
- * This file is part of Hyperf.
+ * This file is part of Hyperf + OpenCodeCo
  *
- * @link     https://www.hyperf.io
+ * @link     https://opencodeco.dev
  * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ * @contact  leo@opencodeco.dev
+ * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
 
 namespace Hyperf\Tracer\Listener;
@@ -81,7 +81,7 @@ class RequestTraceListener implements ListenerInterface
             $span->setTag($this->spanTagManager->get('response', 'body'), (string) $response->getBody());
         }
 
-        if ($event->exception && $this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($event->exception)) {
+        if ($event->exception && $this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($event->exception)) {
             $this->appendExceptionToSpan($span, $exception = $event->exception);
 
             if ($exception instanceof HttpException) {

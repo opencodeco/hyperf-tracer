@@ -52,12 +52,18 @@ trait SpanStarter
             }
             $root = $tracer->startSpan($name, $option);
             $root->setTag(SPAN_KIND, $kind);
+
+            if ($spanContext === null && !empty($correlationId = $request->getHeaderLine('X-Request-ID'))) {
+                $root->getContext()->setTraceId((string)Uuid::asInt($correlationId));
+            }
+
             TracerContext::setRoot($root);
             return $root;
         }
         $option['child_of'] = $root->getContext();
         $child = $tracer->startSpan($name, $option);
         $child->setTag(SPAN_KIND, $kind);
+        $child->setTag('parent.name', $root->getOperationName());
         return $child;
     }
 }

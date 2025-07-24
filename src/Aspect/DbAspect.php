@@ -47,7 +47,7 @@ class DbAspect extends AbstractAspect
         try {
             $result = $proceedingJoinPoint->process();
         } catch (Throwable $e) {
-            if ($this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($e)) {
+            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
                 $span->setTag('error', true);
                 $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
             }

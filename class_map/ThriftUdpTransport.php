@@ -12,14 +12,11 @@ declare(strict_types=1);
 
 namespace Jaeger;
 
-use Hyperf\Context\ApplicationContext;
-use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Coordinator\Constants;
 use Hyperf\Coordinator\CoordinatorManager;
 use Hyperf\Coroutine\Coroutine;
 use Hyperf\Engine\Channel;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Socket;
 use Thrift\Exception\TTransportException;
 use Thrift\Transport\TTransport;

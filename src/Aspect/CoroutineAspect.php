@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 /**
- * This file is part of Hyperf.
+ * This file is part of Hyperf + OpenCodeCo
  *
- * @link     https://www.hyperf.io
+ * @link     https://opencodeco.dev
  * @document https://hyperf.wiki
- * @contact  group@hyperf.io
- * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
+ * @contact  leo@opencodeco.dev
+ * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
 
 namespace Hyperf\Tracer\Aspect;
@@ -33,7 +33,7 @@ class CoroutineAspect extends AbstractAspect
 
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
     {
-        if (! $this->switchManager->isEnable('coroutine')) {
+        if (! $this->switchManager->isEnabled('coroutine')) {
             return $proceedingJoinPoint->process();
         }
 
@@ -59,7 +59,7 @@ class CoroutineAspect extends AbstractAspect
 
                 $callable();
             } catch (Throwable $e) {
-                if (isset($child) && $this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($e)) {
+                if (isset($child) && $this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
                     $child->setTag('error', true);
                     $child->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
                 }
