@@ -15,7 +15,7 @@ namespace Hyperf\Tracer;
 use GuzzleHttp\Client;
 use Hyperf\Tracer\Aspect\CoroutineAspect;
 use Hyperf\Tracer\Aspect\CreateTraceContextAspect;
-use Hyperf\Tracer\Aspect\ElasticserachAspect;
+use Hyperf\Tracer\Aspect\ElasticsearchAspect;
 use Hyperf\Tracer\Aspect\GrpcAspect;
 use Hyperf\Tracer\Aspect\HttpClientAspect;
 use Hyperf\Tracer\Aspect\MongoCollectionAspect;
@@ -62,7 +62,7 @@ class ConfigProvider
             'aspects' => [
                 CoroutineAspect::class,
                 CreateTraceContextAspect::class,
-                ElasticserachAspect::class,
+                ElasticsearchAspect::class,
                 GrpcAspect::class,
                 HttpClientAspect::class,
                 RedisAspect::class,
