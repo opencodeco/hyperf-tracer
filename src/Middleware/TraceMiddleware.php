@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace Hyperf\Tracer\Middleware;
 
+use Hyperf\Context\ApplicationContext;
+use Hyperf\Contract\ConfigInterface;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Coroutine\Coroutine;
 use Hyperf\HttpMessage\Exception\HttpException;
 use Hyperf\Tracer\ExceptionAppender;
@@ -39,8 +42,6 @@ class TraceMiddleware implements MiddlewareInterface
     use ExceptionAppender;
 
     protected SpanTagManager $spanTagManager;
-
-    protected Tracer $tracer;
 
     protected array $config;
 
@@ -70,9 +71,9 @@ class TraceMiddleware implements MiddlewareInterface
         $tracer = TracerContext::getTracer();
         $span = $this->buildSpan($request);
 
-        defer(function () {
+        defer(function () use($tracer){
             try {
-                $this->tracer->flush();
+                $tracer->flush();
             } catch (Throwable $exception) {
                 if (ApplicationContext::hasContainer() && ApplicationContext::getContainer()->has(StdoutLoggerInterface::class)) {
                     ApplicationContext::getContainer()
