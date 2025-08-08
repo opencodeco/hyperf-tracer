@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Hyperf\Tracer;
 
+use Hyperf\Tracer\Support\Uuid;
 use Hyperf\Context\RequestContext;
 use Hyperf\Rpc;
 use OpenTracing\Span;

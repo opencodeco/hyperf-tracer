@@ -101,13 +101,25 @@ class HttpClientAspect extends AbstractAspect
 
         $this->appendCustomSpan($span, $options);
 
-        /** @var PromiseInterface $result */
-        $result = $proceedingJoinPoint->process();
-        $result->then(
-            $this->onFullFilled($span, $options),
-            $this->onRejected($span, $options)
-        );
-        $span->finish();
+        try {
+            $result = $proceedingJoinPoint->process();
+            if ($result instanceof PromiseInterface) {
+                $result->then(
+                    $this->onFullFilled($span, $options),
+                    $this->onRejected($span, $options)
+                );
+            } elseif ($result instanceof ResponseInterface) {
+                $this->onFullFilled($span, $options)($result);
+            }
+        } catch (Throwable $e) {
+            if ($this->switchManager->isEnable('exception') && ! $this->switchManager->isIgnoreException($e)) {
+                $span->setTag('error', true);
+                $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
+            }
+            throw $e;
+        } finally {
+            $span->finish();
+        }
 
         return $result;
     }
@@ -127,7 +139,7 @@ class HttpClientAspect extends AbstractAspect
         return function (ResponseInterface $response) use ($span, $options) {
             $span->setTag(
                 $this->spanTagManager->get('http_client', 'http.status_code'),
-                $response->getStatusCode()
+                (string) $response->getStatusCode()
             );
             $span->setTag('otel.status_code', 'OK');
 
@@ -144,7 +156,7 @@ class HttpClientAspect extends AbstractAspect
 
             $span->setTag(
                 $this->spanTagManager->get('http_client', 'http.status_code'),
-                $exception->getResponse()->getStatusCode()
+                (string) $exception->getResponse()->getStatusCode()
             );
 
             $this->appendCustomResponseSpan($span, $options, $exception->getResponse());
