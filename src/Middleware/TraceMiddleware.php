@@ -1,8 +1,4 @@
 <?php
-/**
- * @noinspection UnknownInspectionInspection
- * @noinspection PhpUnused
- */
 
 declare(strict_types=1);
 /**
@@ -13,6 +9,7 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
+
 namespace Hyperf\Tracer\Middleware;
 
 use Hyperf\Context\ApplicationContext;
@@ -25,6 +22,7 @@ use Hyperf\Tracer\SpanStarter;
 use Hyperf\Tracer\SpanTagManager;
 use Hyperf\Tracer\Support\Uri;
 use Hyperf\Tracer\SwitchManager;
+use Hyperf\Tracer\TracerContext;
 use OpenTracing\Span;
 use OpenTracing\Tracer;
 use Psr\Http\Message\ResponseInterface;
@@ -45,19 +43,15 @@ class TraceMiddleware implements MiddlewareInterface
 
     protected SpanTagManager $spanTagManager;
 
-    protected Tracer $tracer;
-
     protected array $config;
 
     protected string $sensitive_headers_regex = '/pass|auth|token|secret/i';
 
     public function __construct(
-        Tracer $tracer,
         protected SwitchManager $switchManager,
         SpanTagManager $spanTagManager,
         ConfigInterface $config,
     ) {
-        $this->tracer = $tracer;
         $this->spanTagManager = $spanTagManager;
         $this->config = $config->get('opentracing');
     }
@@ -74,12 +68,12 @@ class TraceMiddleware implements MiddlewareInterface
         if (! empty($this->config['ignore_path']) && preg_match($this->config['ignore_path'], $request->getUri()->getPath())) {
             return $handler->handle($request);
         }
-
+        $tracer = TracerContext::getTracer();
         $span = $this->buildSpan($request);
 
-        defer(function () {
+        defer(function () use($tracer){
             try {
-                $this->tracer->flush();
+                $tracer->flush();
             } catch (Throwable $exception) {
                 if (ApplicationContext::hasContainer() && ApplicationContext::getContainer()->has(StdoutLoggerInterface::class)) {
                     ApplicationContext::getContainer()
@@ -96,7 +90,7 @@ class TraceMiddleware implements MiddlewareInterface
         } catch (Throwable $exception) {
             $this->switchManager->isEnabled('exception') && $this->appendExceptionToSpan($span, $exception);
             if ($exception instanceof HttpException) {
-                $span->setTag($this->spanTagManager->get('response', 'status_code'), $exception->getStatusCode());
+                $span->setTag($this->spanTagManager->get('response', 'status_code'), (string) $exception->getStatusCode());
             }
             $this->appendCustomExceptionSpan($span, $exception);
             throw $exception;

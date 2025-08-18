@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
+
 namespace Hyperf\Tracer\Aspect;
 
 use GuzzleHttp\Client;
@@ -16,7 +17,7 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Uri;
-use Hyperf\Di\Aop\AroundInterface;
+use Hyperf\Di\Aop\AbstractAspect;
 use Hyperf\Di\Aop\ProceedingJoinPoint;
 use Hyperf\Di\Exception\Exception;
 use Hyperf\Tracer\ExceptionAppender;
@@ -24,6 +25,7 @@ use Hyperf\Tracer\SpanStarter;
 use Hyperf\Tracer\SpanTagManager;
 use Hyperf\Tracer\Support\Uri as SupportUri;
 use Hyperf\Tracer\SwitchManager;
+use Hyperf\Tracer\TracerContext;
 use OpenTracing\Span;
 use OpenTracing\Tracer;
 use Psr\Http\Message\ResponseInterface;
@@ -31,29 +33,22 @@ use Throwable;
 
 use const OpenTracing\Formats\TEXT_MAP;
 
-class HttpClientAspect implements AroundInterface
+class HttpClientAspect extends AbstractAspect
 {
     use SpanStarter;
     use ExceptionAppender;
 
-    public array $classes = [Client::class . '::requestAsync'];
+    public array $classes = [
+        Client::class . '::request',
+        Client::class . '::requestAsync',
+    ];
 
-    public array $annotations = [];
-
-    private Tracer $tracer;
-
-    private SpanTagManager $spanTagManager;
-
-    public function __construct(Tracer $tracer, private SwitchManager $switchManager, SpanTagManager $spanTagManager)
+    public function __construct(private SwitchManager $switchManager, private SpanTagManager $spanTagManager)
     {
-        $this->tracer = $tracer;
-        $this->spanTagManager = $spanTagManager;
     }
 
     /**
      * @return mixed return the value from process method of ProceedingJoinPoint, or the value that you handled
-     * @throws Exception
-     * @throws Throwable
      */
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
     {
@@ -96,7 +91,7 @@ class HttpClientAspect implements AroundInterface
         }
         $appendHeaders = [];
         // Injects the context into the wire
-        $this->tracer->inject(
+        TracerContext::getTracer()->inject(
             $span->getContext(),
             TEXT_MAP,
             $appendHeaders
@@ -106,13 +101,25 @@ class HttpClientAspect implements AroundInterface
 
         $this->appendCustomSpan($span, $options);
 
-        /** @var PromiseInterface $result */
-        $result = $proceedingJoinPoint->process();
-        $result->then(
-            $this->onFullFilled($span, $options),
-            $this->onRejected($span, $options)
-        );
-        $span->finish();
+        try {
+            $result = $proceedingJoinPoint->process();
+            if ($result instanceof PromiseInterface) {
+                $result->then(
+                    $this->onFullFilled($span, $options),
+                    $this->onRejected($span, $options)
+                );
+            } elseif ($result instanceof ResponseInterface) {
+                $this->onFullFilled($span, $options)($result);
+            }
+        } catch (Throwable $e) {
+            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
+                $span->setTag('error', true);
+                $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
+            }
+            throw $e;
+        } finally {
+            $span->finish();
+        }
 
         return $result;
     }
@@ -132,7 +139,7 @@ class HttpClientAspect implements AroundInterface
         return function (ResponseInterface $response) use ($span, $options) {
             $span->setTag(
                 $this->spanTagManager->get('http_client', 'http.status_code'),
-                $response->getStatusCode()
+                (string) $response->getStatusCode()
             );
             $span->setTag('otel.status_code', 'OK');
 
@@ -149,7 +156,7 @@ class HttpClientAspect implements AroundInterface
 
             $span->setTag(
                 $this->spanTagManager->get('http_client', 'http.status_code'),
-                $exception->getResponse()->getStatusCode()
+                (string) $exception->getResponse()->getStatusCode()
             );
 
             $this->appendCustomResponseSpan($span, $options, $exception->getResponse());

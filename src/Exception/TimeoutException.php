@@ -10,11 +10,10 @@ declare(strict_types=1);
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
 
-namespace Hyperf\Tracer\Aspect;
+namespace Hyperf\Tracer\Exception;
 
-/**
- * @deprecated since v3.0, will be removed in v3.1.
- */
-class JsonRpcAspect extends RpcAspect
+use RuntimeException;
+
+class TimeoutException extends RuntimeException
 {
 }
