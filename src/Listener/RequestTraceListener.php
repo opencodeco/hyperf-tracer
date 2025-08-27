@@ -38,9 +38,9 @@ class RequestTraceListener implements ListenerInterface
     public function listen(): array
     {
         return [
-            RequestReceived::class,
-            RequestHandled::class,
-            RequestTerminated::class,
+            //RequestReceived::class,
+            //RequestHandled::class,
+            //RequestTerminated::class,
         ];
     }
 
