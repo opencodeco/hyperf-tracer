@@ -21,8 +21,9 @@ final class JaegerDecoder
         if (strlen($traceId) == 32 || !is_numeric($traceId)) {
             return $traceId;
         }
+        $hiLen = strlen($traceId) - 16;
 
-        return substr($traceId, 0, 16) . substr($traceId, -16, 16);
+        return substr($traceId, 0, $hiLen) . substr($traceId, $hiLen);
     }
 
     public static function spanIdDecoder(string $spanId): string
