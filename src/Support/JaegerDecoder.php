@@ -22,8 +22,8 @@ final class JaegerDecoder
             return $traceId;
         }
         $hiLen = strlen($traceId) - 16;
-
-        return substr($traceId, 0, $hiLen) . substr($traceId, $hiLen);
+        $newTraceId = substr($traceId, 0, $hiLen) . substr($traceId, $hiLen);
+        return str_pad($newTraceId, 32, '0', STR_PAD_LEFT);
     }
 
     public static function spanIdDecoder(string $spanId): string

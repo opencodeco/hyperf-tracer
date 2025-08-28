@@ -35,6 +35,11 @@ class TracerContext
         return Context::set(self::TRACER, $tracer);
     }
 
+    public static function hasTracer(): bool
+    {
+        return Context::has(self::TRACER);
+    }
+
     public static function getTracer(): Tracer
     {
         return Context::getOrSet(self::TRACER, fn () => make(Tracer::class));

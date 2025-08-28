@@ -27,6 +27,10 @@ class TracerFactory
      */
     public function __invoke(ContainerInterface $container): Tracer
     {
+        if(TracerContext::hasTracer()) {
+            return TracerContext::getTracer();
+        }
+
         $config = $container->get(ConfigInterface::class);
         $name = $config->get('opentracing.default');
 
@@ -51,6 +55,8 @@ class TracerFactory
             );
         }
 
-        return $factory->make($name);
+        $tracer = $factory->make($name);
+        TracerContext::setTracer($tracer);
+        return TracerContext::getTracer();
     }
 }
