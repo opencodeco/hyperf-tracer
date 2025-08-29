@@ -39,6 +39,7 @@ class HttpClientAspect extends AbstractAspect
     use ExceptionAppender;
 
     public array $classes = [
+        Client::class . '::request',
         Client::class . '::requestAsync',
     ];
 
