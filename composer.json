@@ -11,23 +11,18 @@
     ],
     "homepage": "https://hyperf.io",
     "support": {
-        "issues": "https://github.com/hyperf/hyperf/issues",
-        "source": "https://github.com/hyperf/hyperf",
         "docs": "https://hyperf.wiki",
-        "pull-request": "https://github.com/hyperf/hyperf/pulls"
+        "issues": "https://github.com/hyperf/hyperf/issues",
+        "pull-request": "https://github.com/hyperf/hyperf/pulls",
+        "source": "https://github.com/hyperf/hyperf"
     },
     "require": {
-        "php": ">=8.1",
-        "hyperf/collection": "~3.1.0",
-        "hyperf/context": "~3.1.0",
-        "hyperf/contract": "~3.1.0",
-        "hyperf/coordinator": "~3.1.0",
-        "hyperf/coroutine": "~3.1.0",
-        "hyperf/di": "~3.1.0",
-        "hyperf/engine": "^2.0",
-        "hyperf/guzzle": "~3.1.0",
-        "hyperf/stringable": "~3.1.0",
-        "hyperf/support": "~3.1.0",
+        "php": ">=8.0",
+        "hyperf/contract": "^3.0",
+        "hyperf/di": "^3.0",
+        "hyperf/guzzle": "^3.0",
+        "hyperf/support": "^3.0",
+        "hyperf/utils": "^3.0",
         "jcchavezs/zipkin-opentracing": "^2.0",
         "jonahgeorge/jaeger-client-php": "^1.4",
         "opentracing/opentracing": "^1.0",
@@ -45,8 +40,7 @@
     },
     "suggest": {
         "hyperf/event": "Required to use DbQueryExecutedListener.",
-        "jonahgeorge/jaeger-client-php": "Required (^0.6) to use jaeger tracing.",
-        "longlang/phpkafka": "Required (^1.2) to use Kafka Producer."
+        "jonahgeorge/jaeger-client-php": "Required (^0.6) to use jaeger tracing."
     },
     "autoload": {
         "psr-4": {
@@ -73,7 +67,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "3.1-dev"
+            "dev-master": "3.0-dev"
         },
         "hyperf": {
             "config": "Hyperf\\Tracer\\ConfigProvider"
