@@ -10,6 +10,8 @@ declare(strict_types=1);
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
 use Zipkin\Samplers\BinarySampler;
+use Hyperf\Tracer\Adapter\JaegerTracerFactory;
+use Hyperf\Tracer\Adapter\ZipkinTracerFactory;
 
 use function Hyperf\Support\env;
 
@@ -24,7 +26,7 @@ return [
     ],
     'tracer' => [
         'zipkin' => [
-            'driver' => Hyperf\Tracer\Adapter\ZipkinTracerFactory::class,
+            'driver' => ZipkinTracerFactory::class,
             'app' => [
                 'name' => env('APP_NAME', 'skeleton'),
                 // Hyperf will detect the system info automatically as the value if ipv4, ipv6, port is null
@@ -39,7 +41,7 @@ return [
             'sampler' => BinarySampler::createAsAlwaysSample(),
         ],
         'jaeger' => [
-            'driver' => Hyperf\Tracer\Adapter\JaegerTracerFactory::class,
+            'driver' => JaegerTracerFactory::class,
             'name' => env('APP_NAME', 'skeleton'),
             'options' => [
                 /*
