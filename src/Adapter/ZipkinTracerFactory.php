@@ -9,11 +9,9 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
-
 namespace Hyperf\Tracer\Adapter;
 
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Tracer\Adapter\Reporter\ReporterFactory;
 use Hyperf\Tracer\Contract\NamedFactoryInterface;
 use Zipkin\Endpoint;
 use Zipkin\Reporters\Http;
@@ -27,16 +25,16 @@ class ZipkinTracerFactory implements NamedFactoryInterface
 
     private string $name = '';
 
-    public function __construct(private ConfigInterface $config, private ReporterFactory $reportFactory)
+    public function __construct(private ConfigInterface $config, private HttpClientFactory $clientFactory)
     {
     }
 
     public function make(string $name): \OpenTracing\Tracer
     {
         $this->name = $name;
-        [$app, $sampler, $reporterOption] = $this->parseConfig();
+        [$app, $options, $sampler] = $this->parseConfig();
         $endpoint = Endpoint::create($app['name'], $app['ipv4'], $app['ipv6'], $app['port']);
-        $reporter = $this->reportFactory->make($reporterOption);
+        $reporter = new Http($options, $this->clientFactory);
         $tracing = TracingBuilder::create()
             ->havingLocalEndpoint($endpoint)
             ->havingSampler($sampler)
@@ -48,7 +46,6 @@ class ZipkinTracerFactory implements NamedFactoryInterface
     private function parseConfig(): array
     {
         // @TODO Detect the ipv4, ipv6, port from server object or system info automatically.
-        $reporter = (string) $this->getConfig('reporter', 'http');
         return [
             $this->getConfig('app', [
                 'name' => 'skeleton',
@@ -56,13 +53,10 @@ class ZipkinTracerFactory implements NamedFactoryInterface
                 'ipv6' => null,
                 'port' => 9501,
             ]),
-            $this->getConfig('sampler', BinarySampler::createAsAlwaysSample()),
-            $this->getConfig('reporters.' . $reporter, [
-                'class' => Http::class,
-                'constructor' => [
-                    'options' => $this->getConfig('options', []),
-                ],
+            $this->getConfig('options', [
+                'timeout' => 1,
             ]),
+            $this->getConfig('sampler', BinarySampler::createAsAlwaysSample()),
         ];
     }
 

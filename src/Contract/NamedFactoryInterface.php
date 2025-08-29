@@ -9,15 +9,12 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
-
 namespace Hyperf\Tracer\Contract;
-
-use OpenTracing\Tracer;
 
 interface NamedFactoryInterface
 {
     /**
      * Create the object from factory.
      */
-    public function make(string $name): Tracer;
+    public function make(string $name): \OpenTracing\Tracer;
 }

@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
-
 namespace Hyperf\Tracer\Aspect;
 
 use Elasticsearch\Client;
@@ -18,9 +17,10 @@ use Hyperf\Di\Aop\ProceedingJoinPoint;
 use Hyperf\Tracer\SpanStarter;
 use Hyperf\Tracer\SpanTagManager;
 use Hyperf\Tracer\SwitchManager;
+use OpenTracing\Tracer;
 use Throwable;
 
-class ElasticsearchAspect extends AbstractAspect
+class ElasticserachAspect extends AbstractAspect
 {
     use SpanStarter;
 
@@ -40,7 +40,7 @@ class ElasticsearchAspect extends AbstractAspect
         Client::class . '::search',
     ];
 
-    public function __construct(private SwitchManager $switchManager, private SpanTagManager $spanTagManager)
+    public function __construct(private Tracer $tracer, private SwitchManager $switchManager, private SpanTagManager $spanTagManager)
     {
     }
 
@@ -49,19 +49,13 @@ class ElasticsearchAspect extends AbstractAspect
      */
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
     {
-        if ($this->switchManager->isEnabled('elasticserach') === false) {
-            return $proceedingJoinPoint->process();
-        }
-
         $key = $proceedingJoinPoint->className . '::' . $proceedingJoinPoint->methodName;
         $span = $this->startSpan($key);
         try {
             $result = $proceedingJoinPoint->process();
         } catch (Throwable $e) {
-            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
-                $span->setTag('error', true);
-                $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
-            }
+            $span->setTag('error', true);
+            $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
             throw $e;
         } finally {
             $span->finish();

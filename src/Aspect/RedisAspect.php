@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
-
 namespace Hyperf\Tracer\Aspect;
 
 use Hyperf\Di\Aop\AbstractAspect;
@@ -18,6 +17,7 @@ use Hyperf\Redis\Redis;
 use Hyperf\Tracer\SpanStarter;
 use Hyperf\Tracer\SpanTagManager;
 use Hyperf\Tracer\SwitchManager;
+use OpenTracing\Tracer;
 use Throwable;
 
 class RedisAspect extends AbstractAspect
@@ -28,7 +28,7 @@ class RedisAspect extends AbstractAspect
         Redis::class . '::__call',
     ];
 
-    public function __construct(private SwitchManager $switchManager, private SpanTagManager $spanTagManager)
+    public function __construct(private Tracer $tracer, private SwitchManager $switchManager, private SpanTagManager $spanTagManager)
     {
     }
 
@@ -48,10 +48,8 @@ class RedisAspect extends AbstractAspect
             $result = $proceedingJoinPoint->process();
             $span->setTag($this->spanTagManager->get('redis', 'result'), json_encode($result, JSON_THROW_ON_ERROR));
         } catch (Throwable $e) {
-            if ($this->switchManager->isEnabled('exception') && ! $this->switchManager->isIgnoreException($e)) {
-                $span->setTag('error', true);
-                $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
-            }
+            $span->setTag('error', true);
+            $span->log(['message', $e->getMessage(), 'code' => $e->getCode(), 'stacktrace' => $e->getTraceAsString()]);
             throw $e;
         } finally {
             $span->finish();

@@ -9,19 +9,11 @@ declare(strict_types=1);
  * @contact  leo@opencodeco.dev
  * @license  https://github.com/opencodeco/hyperf-metric/blob/main/LICENSE
  */
-
 namespace Hyperf\Tracer;
-
-use Hyperf\Context\Context;
-use OpenTracing\Span;
-use Throwable;
 
 class SwitchManager
 {
-    /**
-     * @var array
-     */
-    private $config
+    private array $config
         = [
             'guzzle' => false,
             'redis' => false,
@@ -29,7 +21,6 @@ class SwitchManager
             // beta feature, please don't enable 'method' in production environment
             'method' => false,
             'error' => false,
-            'ignore_exceptions' => [],
         ];
 
     /**
@@ -45,21 +36,6 @@ class SwitchManager
      */
     public function isEnabled(string $identifier): bool
     {
-        if (! isset($this->config[$identifier])) {
-            return false;
-        }
-
-        return $this->config[$identifier] && Context::get('tracer.root') instanceof Span;
-    }
-
-    public function isIgnoreException(string|Throwable $exception): bool
-    {
-        $ignoreExceptions = $this->config['ignore_exceptions'] ?? [];
-        foreach ($ignoreExceptions as $ignoreException) {
-            if (is_a($exception, $ignoreException, true)) {
-                return true;
-            }
-        }
-        return false;
+        return $this->config[$identifier] ?? false;
     }
 }
