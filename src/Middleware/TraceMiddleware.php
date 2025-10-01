@@ -124,7 +124,7 @@ class TraceMiddleware implements MiddlewareInterface
 
     protected function buildSpan(ServerRequestInterface $request): Span
     {
-        $path = $this->getPath($request->getUri());
+        $path = $this->getPath($request);
         $spanName = sprintf('%s %s', $request->getMethod(), $path);
 
         $span = $this->startSpan($spanName, [], SPAN_KIND_RPC_SERVER);
@@ -156,8 +156,20 @@ class TraceMiddleware implements MiddlewareInterface
         return $span;
     }
 
-    protected function getPath(UriInterface $uri): string
+    protected function getPath(ServerRequestInterface $request): string
     {
-        return Uri::sanitize($uri->getPath());
+        $dispatched = $request->getAttribute(Dispatched::class);
+        if (! $dispatched) {
+            return Uri::sanitize($request->getUri()->getPath(), $this->getUriMask());
+        }
+        if (! $dispatched->handler) {
+            return 'not_found';
+        }
+        return $dispatched->handler->route;
+    }
+
+    protected function getUriMask(): array
+    {
+        return is_array($this->config['uri_mask'])? $this->config['uri_mask'] : [];
     }
 }
