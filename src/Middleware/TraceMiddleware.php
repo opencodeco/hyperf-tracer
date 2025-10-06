@@ -170,6 +170,13 @@ class TraceMiddleware implements MiddlewareInterface
 
     protected function getUriMask(): array
     {
-        return is_array($this->config['uri_mask'])? $this->config['uri_mask'] : [];
+        if(
+            array_key_exists('uri_mask', $this->config) &&
+            is_array($this->config['uri_mask'])
+        ) {
+            return $this->config['uri_mask'];
+        }
+
+        return [];
     }
 }
