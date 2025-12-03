@@ -116,7 +116,6 @@ class HttpClientAspect implements AroundInterface
             $this->onFullFilled($span, $options),
             $this->onRejected($span, $options)
         );
-        $span->finish();
 
         return $result;
     }
@@ -157,6 +156,8 @@ class HttpClientAspect implements AroundInterface
             $span->setTag('otel.status_code', 'OK');
 
             $this->appendCustomResponseSpan($span, $options, $response);
+
+            $span->finish();
         };
     }
 
@@ -173,6 +174,8 @@ class HttpClientAspect implements AroundInterface
             );
 
             $this->appendCustomResponseSpan($span, $options, $exception->getResponse());
+
+            $span->finish();
 
             return Create::rejectionFor($exception);
         };
